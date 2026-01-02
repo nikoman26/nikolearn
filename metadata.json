@@ -1,0 +1,8 @@
+{
+  "name": "NIKOlearn",
+  "description": "An offline-first, privacy-centric learning platform using the 2025 tech stack. Features Mwalimu AI, Bento Grid UI, and Science Lab.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
