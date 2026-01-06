@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, TrendingUp, Award, Calendar, Clock, CheckCircle, Plus, BarChart3, FileText, Star, Target, PlayCircle } from 'lucide-react';
+import { BookOpen, Users, TrendingUp, Award, Calendar, Clock, CheckCircle, Plus, BarChart3, FileText, Star, Target, PlayCircle, MessageSquare, Settings } from 'lucide-react';
 
 interface StudentProgress {
   id: string;
@@ -13,10 +13,14 @@ interface StudentProgress {
 }
 
 interface LessonStats {
-  totalLessons: number;
-  publishedLessons: number;
-  studentEngagement: number;
-  avgCompletionRate: number;
+  id: string;
+  title: string;
+  subject: string;
+  gradeLevel: number;
+  status: 'published' | 'draft';
+  completionRate: number;
+  studentsEnrolled: number;
+  avgScore: number;
 }
 
 interface ClassMetrics {
@@ -83,12 +87,48 @@ export const TeacherDashboard: React.FC = () => {
     }
   ]);
 
-  const [lessonStats] = useState<LessonStats>({
-    totalLessons: 24,
-    publishedLessons: 18,
-    studentEngagement: 87,
-    avgCompletionRate: 78
-  });
+  const [lessons] = useState<LessonStats[]>([
+    {
+      id: 'l1',
+      title: 'Photosynthesis',
+      subject: 'Science',
+      gradeLevel: 5,
+      status: 'published',
+      completionRate: 85,
+      studentsEnrolled: 24,
+      avgScore: 87
+    },
+    {
+      id: 'l2',
+      title: 'Introduction to Fractions',
+      subject: 'Math',
+      gradeLevel: 4,
+      status: 'draft',
+      completionRate: 0,
+      studentsEnrolled: 0,
+      avgScore: 0
+    },
+    {
+      id: 'l3',
+      title: 'Reading Comprehension',
+      subject: 'English',
+      gradeLevel: 5,
+      status: 'published',
+      completionRate: 78,
+      studentsEnrolled: 18,
+      avgScore: 75
+    },
+    {
+      id: 'l4',
+      title: 'Kenyan History',
+      subject: 'Social Studies',
+      gradeLevel: 5,
+      status: 'published',
+      completionRate: 92,
+      studentsEnrolled: 21,
+      avgScore: 83
+    }
+  ]);
 
   const [classMetrics] = useState<ClassMetrics>({
     totalStudents: 24,
@@ -158,8 +198,8 @@ export const TeacherDashboard: React.FC = () => {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-800">{lessonStats.publishedLessons}</div>
-            <div className="text-sm text-gray-500">of {lessonStats.totalLessons} total</div>
+            <div className="text-3xl font-bold text-gray-800">{lessons.filter(l => l.status === 'published').length}</div>
+            <div className="text-sm text-gray-500">of {lessons.length} total</div>
           </div>
         </div>
 
@@ -202,9 +242,9 @@ export const TeacherDashboard: React.FC = () => {
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
         {[
           { id: 'overview', name: 'Overview', icon: BarChart3 },
-          { id: 'lessons', name: 'Lessons', icon: FileText },
-          { id: 'students', name: 'Students', icon: Users },
-          { id: 'analytics', name: 'Analytics', icon: TrendingUp },
+          { id: 'lessons', name: 'Content Management', icon: FileText },
+          { id: 'students', name: 'Student Roster', icon: Users },
+          { id: 'analytics', name: 'Detailed Analytics', icon: TrendingUp },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -275,17 +315,17 @@ export const TeacherDashboard: React.FC = () => {
           <div className="bg-[#e0e5ec] rounded-3xl p-6 shadow-clay">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="flex items-center gap-3 p-4 bg-primary text-white rounded-2xl hover:opacity-90 transition-opacity">
+              <button className="flex items-center gap-3 p-4 bg-primary text-white rounded-2xl hover:opacity-90 transition-opacity shadow-md">
                 <Plus size={20} />
                 <span className="font-semibold">Create Lesson</span>
               </button>
-              <button className="flex items-center gap-3 p-4 bg-blue-500 text-white rounded-2xl hover:opacity-90 transition-opacity">
+              <button className="flex items-center gap-3 p-4 bg-blue-500 text-white rounded-2xl hover:opacity-90 transition-opacity shadow-md">
                 <Target size={20} />
                 <span className="font-semibold">Create Assessment</span>
               </button>
-              <button className="flex items-center gap-3 p-4 bg-green-500 text-white rounded-2xl hover:opacity-90 transition-opacity">
-                <BarChart3 size={20} />
-                <span className="font-semibold">View Reports</span>
+              <button className="flex items-center gap-3 p-4 bg-green-500 text-white rounded-2xl hover:opacity-90 transition-opacity shadow-md">
+                <MessageSquare size={20} />
+                <span className="font-semibold">Message Parents</span>
               </button>
             </div>
           </div>
@@ -297,57 +337,16 @@ export const TeacherDashboard: React.FC = () => {
           
           {/* Lessons Header */}
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">Your Lessons</h3>
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:opacity-90">
+            <h3 className="text-xl font-bold text-gray-800">Your Content Library</h3>
+            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:opacity-90 shadow-md">
               <Plus size={16} />
-              Create New Lesson
+              New Lesson
             </button>
           </div>
 
           {/* Lessons Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                id: 'l1',
-                title: 'Photosynthesis',
-                subject: 'Science',
-                gradeLevel: 5,
-                status: 'published',
-                completionRate: 85,
-                studentsEnrolled: 24,
-                avgScore: 87
-              },
-              {
-                id: 'l2',
-                title: 'Introduction to Fractions',
-                subject: 'Math',
-                gradeLevel: 4,
-                status: 'draft',
-                completionRate: 0,
-                studentsEnrolled: 0,
-                avgScore: 0
-              },
-              {
-                id: 'l3',
-                title: 'Reading Comprehension',
-                subject: 'English',
-                gradeLevel: 5,
-                status: 'published',
-                completionRate: 78,
-                studentsEnrolled: 18,
-                avgScore: 75
-              },
-              {
-                id: 'l4',
-                title: 'Kenyan History',
-                subject: 'Social Studies',
-                gradeLevel: 5,
-                status: 'published',
-                completionRate: 92,
-                studentsEnrolled: 21,
-                avgScore: 83
-              }
-            ].map((lesson) => (
+            {lessons.map((lesson) => (
               <div key={lesson.id} className="bg-[#e0e5ec] rounded-3xl p-6 shadow-clay hover:scale-105 transition-transform">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -373,10 +372,10 @@ export const TeacherDashboard: React.FC = () => {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600">
-                    Edit
+                  <button className="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 shadow-sm">
+                    Edit Content
                   </button>
-                  <button className="px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600">
+                  <button className="px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600 shadow-sm">
                     {lesson.status === 'published' ? 'View Analytics' : 'Publish'}
                   </button>
                 </div>
@@ -391,10 +390,14 @@ export const TeacherDashboard: React.FC = () => {
           
           {/* Students Header */}
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">Student Progress</h3>
+            <h3 className="text-xl font-bold text-gray-800">Student Roster (Grade 5)</h3>
             <div className="flex items-center gap-2">
-              <button className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90">
+              <button className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 shadow-md">
                 Export Report
+              </button>
+              <button className="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:opacity-90 shadow-md">
+                <Plus size={16} className="inline mr-1" />
+                Add Student
               </button>
             </div>
           </div>
@@ -411,6 +414,7 @@ export const TeacherDashboard: React.FC = () => {
                     <th className="pb-4">Streak</th>
                     <th className="pb-4">Last Active</th>
                     <th className="pb-4">Avg Score</th>
+                    <th className="pb-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -438,6 +442,11 @@ export const TeacherDashboard: React.FC = () => {
                       <td className="py-4 font-medium text-gray-700">{student.streakDays} days</td>
                       <td className="py-4 text-sm text-gray-500">{formatTimeAgo(student.lastActive)}</td>
                       <td className="py-4 font-bold text-gray-800">{student.averageScore}%</td>
+                      <td className="py-4">
+                        <button className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200">
+                          <Settings size={16} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

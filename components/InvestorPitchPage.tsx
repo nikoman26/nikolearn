@@ -1,138 +1,146 @@
 import React from 'react';
-import {
-  TrendingUp,
-  Users,
-  Target,
-  DollarSign,
-  Shield,
-  Award,
-  BarChart3,
-  Lightbulb,
-  CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
+import { TrendingUp, Globe, Target, Shield, Users, Award, BarChart3, Zap, MapPin, DollarSign } from 'lucide-react';
 
-/* --------------------------------
-   Shared Icon Props
--------------------------------- */
-type IconProps = {
-  size: number;
-};
-
-/* --------------------------------
-   Custom Icons (Consistent Style)
--------------------------------- */
-const VRHeadset = ({ size }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M4 7c-1.1 0-2 .9-2 2v3c0 1.1.9 2 2 2h3.5c.7 0 1.3-.4 1.6-1l.9-1.8c.3-.6.9-1 1.6-1s1.3.4 1.6 1l.9 1.8c.3.6.9 1 1.6 1H20c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H4zm5 5H5V9h4v3zm10 0h-4V9h4v3z" />
-  </svg>
-);
-
-const Brain = ({ size }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M9 2a4 4 0 0 0-4 4v.3A3.5 3.5 0 0 0 3 9.5c0 1.3.7 2.4 1.8 3A3.5 3.5 0 0 0 8 17h1v-2H8a1.5 1.5 0 0 1 0-3H7V9h1a2 2 0 0 0 2-2V2zm6 0h-1v5a2 2 0 0 0 2 2h1v3h-1a1.5 1.5 0 0 1 0 3h-1v2h1a3.5 3.5 0 0 0 3.2-4.5 3.5 3.5 0 0 0-1.8-6.2V6a4 4 0 0 0-4-4z" />
-  </svg>
-);
-
-const BookOpen = ({ size }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M3 4c0-1.1.9-2 2-2h6c1.7 0 3 1.3 3 3v15c-.9-.6-2-.9-3-.9H5c-1.1 0-2-.9-2-2V4zm16-2h-6c-1.7 0-3 1.3-3 3v15c.9-.6 2-.9 3-.9h6c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-  </svg>
-);
-
-const Wifi = ({ size }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M12 4C7.6 4 3.7 5.8 1 8.5l1.4 1.4C4.7 7.6 8.2 6 12 6s7.3 1.6 9.6 3.9L23 8.5C20.3 5.8 16.4 4 12 4z" />
-    <path d="M12 8c-2.9 0-5.4 1.1-7.4 3.1l1.4 1.4C7.6 10.9 9.7 10 12 10s4.4.9 6 2.5l1.4-1.4C17.4 9.1 14.9 8 12 8z" />
-    <path d="M12 12c-1.5 0-2.8.6-3.8 1.6l1.4 1.4c.6-.6 1.4-1 2.4-1s1.8.4 2.4 1l1.4-1.4c-1-1-2.3-1.6-3.8-1.6z" />
-    <circle cx="12" cy="18" r="1.5" />
-  </svg>
-);
-
-/* --------------------------------
-   Investor Pitch Page
--------------------------------- */
 export const InvestorPitchPage: React.FC = () => {
-  const solutionFeatures = [
-    {
-      icon: <BookOpen size={24} />,
-      title: "Curriculum-Aligned Learning",
-      description: "Directly aligned with Kenyan CBC and adaptable to other curricula"
-    },
-    {
-      icon: <Brain size={24} />,
-      title: "AI-Driven Personalization",
-      description: "Mwalimu AI adapts to each student's learning style and pace"
-    },
-    {
-      icon: <VRHeadset size={24} />,
-      title: "Immersive VR/AR Experiences",
-      description: "Virtual labs and simulations for hands-on learning"
-    },
-    {
-      icon: <Award size={24} />,
-      title: "Gamified Motivation",
-      description: "LearnCoins system keeps students engaged"
-    },
-    {
-      icon: <Users size={24} />,
-      title: "Family Participation",
-      description: "Family Mode brings parents into the learning journey"
-    },
-    {
-      icon: <Wifi size={24} />,
-      title: "Offline-First Infrastructure",
-      description: "Works reliably in low-connectivity environments"
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-500/5">
-      <div className="max-w-6xl mx-auto p-6">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <TrendingUp size={48} className="text-primary" />
-            <h1 className="text-5xl font-bold text-gray-800">For Investors</h1>
-          </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            NIKOlearn is transforming education across Africa using AI, immersive learning, and holistic skill development.
-          </p>
+    <div className="max-w-6xl mx-auto py-12 px-6 space-y-24">
+      {/* Hero Header */}
+      <section className="text-center space-y-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-bold text-sm">
+          <TrendingUp size={16} />
+          Investment Opportunity: Seed Round
         </div>
+        <h1 className="text-5xl lg:text-7xl font-extrabold text-gray-800">
+          The Future of EdTech <br />in <span className="text-primary">Emerging Markets.</span>
+        </h1>
+        <p className="text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
+          NIKOlearn is bridging the digital divide with an offline-first infrastructure designed specifically for Africa's unique educational landscape.
+        </p>
+      </section>
 
-        {/* Solution */}
-        <section className="mb-16">
-          <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-8">
-            <h2 className="text-3xl font-bold text-green-800 mb-8 flex items-center gap-3">
-              <Lightbulb size={32} />
-              The Solution
-            </h2>
+      {/* Market Opportunity */}
+      <section className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="space-y-8">
+          <h2 className="text-4xl font-bold text-gray-800">The Problem</h2>
+          <div className="space-y-6">
+            <ProblemItem 
+              title="connectivity Gap" 
+              desc="70% of learners in Sub-Saharan Africa lack reliable high-speed internet access." 
+            />
+            <ProblemItem 
+              title="Curriculum Mismatch" 
+              desc="Most EdTech solutions use Western contexts, alienating local learners." 
+            />
+            <ProblemItem 
+              title="Neurodivergent Neglect" 
+              desc="Standard classrooms fail to support unique cognitive needs, leading to high dropout rates." 
+            />
+          </div>
+        </div>
+        <div className="bg-[#e0e5ec] p-12 rounded-[48px] shadow-clay flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="text-6xl font-bold text-primary">100M+</div>
+            <div className="text-xl font-bold text-gray-500 uppercase tracking-widest">Target Students</div>
+            <div className="text-sm text-gray-400">In Sub-Saharan Africa by 2026</div>
+          </div>
+        </div>
+      </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {solutionFeatures.map((feature, i) => (
-                <div key={i} className="bg-white p-6 rounded-lg shadow-sm border">
-                  <div className="text-primary mb-3">{feature.icon}</div>
-                  <h3 className="font-bold text-gray-800 mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+      {/* Our Solution - Key Differentiators */}
+      <section className="space-y-12">
+        <h2 className="text-4xl font-bold text-gray-800 text-center">Key Differentiators</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <DiffCard 
+            icon={<Zap />} 
+            title="Offline-First Stack" 
+            desc="Proprietary caching engine allowing high-quality video & VR without active internet." 
+          />
+          <DiffCard 
+            icon={<Globe />} 
+            title="Localized AI" 
+            desc="Gemini-powered 'Mwalimu AI' trained on CBC curriculum with Kiswahili support." 
+          />
+          <DiffCard 
+            icon={<Users />} 
+            title="Family-Economy" 
+            desc="Incentivizing learning through household chores & LearnCoin rewards." 
+          />
+        </div>
+      </section>
+
+      {/* Roadmap/Traction */}
+      <section className="bg-gray-800 p-12 rounded-[48px] text-white">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <h2 className="text-4xl font-bold">Scalable Business Model</h2>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
+                  <DollarSign size={24} />
                 </div>
-              ))}
+                <p className="text-lg opacity-90">B2B: Licensing to schools & institutions.</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
+                  <Users size={24} />
+                </div>
+                <p className="text-lg opacity-90">B2C: Affordable monthly family subscriptions.</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
+                  <MapPin size={24} />
+                </div>
+                <p className="text-lg opacity-90">G2B: Partnerships with Ministry of Education.</p>
+              </div>
             </div>
           </div>
-        </section>
-
-        {/* Vision */}
-        <section className="mb-16">
-          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl p-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-3">
-              <Target size={32} />
-              Vision
-            </h2>
-            <p className="text-xl text-gray-700 max-w-4xl mx-auto">
-              To become Africa’s most trusted learning infrastructure, empowering learners with knowledge, confidence, and life-ready skills.
-            </p>
+          <div className="grid grid-cols-2 gap-4">
+            <StatBox label="User Retention" value="92%" />
+            <StatBox label="CAC" value="$4.50" />
+            <StatBox label="Avg Mastery" value="+40%" />
+            <StatBox label="Partnerships" value="12+" />
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="text-center py-12">
+        <h2 className="text-4xl font-bold text-gray-800 mb-8">Join the Education Revolution</h2>
+        <button className="bg-primary text-white px-12 py-5 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 transition-transform">
+          Request Pitch Deck
+        </button>
+      </section>
     </div>
   );
 };
+
+const ProblemItem = ({ title, desc }: any) => (
+  <div className="flex gap-4">
+    <div className="mt-1">
+      <div className="w-2 h-2 bg-red-500 rounded-full" />
+    </div>
+    <div>
+      <h4 className="font-bold text-gray-800 text-lg">{title}</h4>
+      <p className="text-gray-500">{desc}</p>
+    </div>
+  </div>
+);
+
+const DiffCard = ({ icon, title, desc }: any) => (
+  <div className="bg-[#e0e5ec] p-8 rounded-[40px] shadow-clay flex flex-col gap-6">
+    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary shadow-clay-sm">
+      {React.cloneElement(icon, { size: 28 })}
+    </div>
+    <div className="space-y-2">
+      <h3 className="font-bold text-xl text-gray-800">{title}</h3>
+      <p className="text-gray-500 leading-relaxed text-sm">{desc}</p>
+    </div>
+  </div>
+);
+
+const StatBox = ({ label, value }: any) => (
+  <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-md text-center">
+    <div className="text-3xl font-bold mb-1">{value}</div>
+    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{label}</div>
+  </div>
+);

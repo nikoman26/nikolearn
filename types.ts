@@ -34,8 +34,10 @@ export interface ChatMessage {
 }
 
 export enum ViewState {
+  LandingPage = 'LANDING_PAGE',
   Dashboard = 'DASHBOARD',
   LessonPlayer = 'LESSON_PLAYER',
+  CBCLessonPlayer = 'CBC_LESSON_PLAYER',
   ScienceLab = 'SCIENCE_LAB',
   Shop = 'SHOP',
   Family = 'FAMILY',
@@ -49,10 +51,10 @@ export enum ViewState {
   TeacherDashboard = 'TEACHER_DASHBOARD',
   ProfileManagement = 'PROFILE_MANAGEMENT',
   ActivityLog = 'ACTIVITY_LOG',
-  Logout = 'LOGOUT'
+  Logout = 'LOGOUT',
+  Login = 'LOGIN'
 }
 
-// New types for Phase 4 & 5 features
 export interface AttentionMetrics {
   focusLevel: number;
   timestamp: Date;
