@@ -2,8 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
 
 const supabaseUrl = 'https://ntbdgaqpecsynmhmtobb.supabase.co';
-// Using the correct publishable key from Supabase context
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50YmRnYXFwZWNzeW5taGhtdG9iYiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY2NDAxNjQwLCJleHAiOjIwODE5Nzc2NDB9.0KDs4lPEYNQb2DzBrfIFnLiayOYq436QYZcZRmPDULg';
+const supabaseAnonKey = 'sb_publishable_tbueIop0A49myiEA_vJbTA_Y88Q1viV';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -18,19 +17,16 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Helper function to get current user
 export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 };
 
-// Helper function to sign out
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 };
 
-// Helper function to get user profile
 export const getUserProfile = async (userId: string) => {
   const { data, error } = await supabase
     .from('profiles')
