@@ -3,13 +3,15 @@ import {
   Heart, Star, Coins, CheckCircle, Clock, 
   ChevronRight, TrendingUp, BookOpen, 
   Award, Shield, Calendar, Bell, Plus, 
-  Activity, Zap, Info
+  Activity, Zap, Info, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { ChoreManager } from './parent/ChoreManager';
+import { SensorySettings } from './parent/SensorySettings';
 
 export const ParentDashboard: React.FC = () => {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'chores'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'chores' | 'sensory'>('overview');
 
   const studentName = "Kamau";
   const focusScore = 82;
@@ -17,12 +19,6 @@ export const ParentDashboard: React.FC = () => {
     { id: 1, type: 'lesson', title: 'Finished "Heart Valves"', time: '20m ago', reward: 25 },
     { id: 2, type: 'focus', title: 'High Attention Streak (45 min)', time: '1h ago', reward: 15 },
     { id: 3, type: 'chore', title: 'Completed "Wash Dishes"', time: '3h ago', reward: 30, pending: true },
-  ];
-
-  const chores = [
-    { id: 'c1', title: 'Wash the Dishes', reward: 30, status: 'pending', date: 'Today' },
-    { id: 'c2', title: 'Organize Bookshelf', reward: 50, status: 'verified', date: 'Yesterday' },
-    { id: 'c3', title: 'Water the Garden', reward: 20, status: 'assigned', date: 'Every Mon/Wed' },
   ];
 
   return (
@@ -54,13 +50,13 @@ export const ParentDashboard: React.FC = () => {
         </div>
         <div className="flex gap-3">
           <button className="px-6 py-3 bg-white text-primary rounded-2xl font-bold text-sm shadow-md hover:scale-105 transition-all">Quick Message</button>
-          <button className="px-6 py-3 bg-white/20 text-white rounded-2xl font-bold text-sm backdrop-blur-md hover:bg-white/30 transition-all">Reward Store</button>
+          <button onClick={() => setActiveTab('chores')} className="px-6 py-3 bg-white/20 text-white rounded-2xl font-bold text-sm backdrop-blur-md hover:bg-white/30 transition-all">Reward Store</button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-4 border-b border-gray-200">
-        {['overview', 'progress', 'chores'].map((tab) => (
+        {['overview', 'progress', 'chores', 'sensory'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -100,7 +96,7 @@ export const ParentDashboard: React.FC = () => {
                       </div>
                       {act.pending && (
                         <div className="mt-3 flex gap-2">
-                          <button className="px-4 py-2 bg-green-500 text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90">Verify Task</button>
+                          <button className="px-4 py-2 bg-green-500 text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90" onClick={() => setActiveTab('chores')}>Verify Task</button>
                           <button className="px-4 py-2 bg-white text-gray-500 rounded-xl text-xs font-bold shadow-clay-sm border border-gray-50">Details</button>
                         </div>
                       )}
@@ -118,7 +114,7 @@ export const ParentDashboard: React.FC = () => {
                   <div>
                     <h3 className="text-xl font-bold text-gray-800">Insight: Afternoon Focus</h3>
                     <p className="text-sm text-gray-500 max-w-sm">
-                      {studentName} is 25% more focused between 2 PM and 4 PM. We've optimized their schedule to include harder Science tasks during this window.
+                      {studentName} is 25% more focused between 2 PM and 4 PM. 
                     </p>
                   </div>
                 </div>
@@ -129,60 +125,19 @@ export const ParentDashboard: React.FC = () => {
 
           {activeTab === 'progress' && (
             <div className="bg-white/40 rounded-[32px] p-8 shadow-clay space-y-8">
-              <h3 className="text-xl font-bold text-gray-800">Academic Mastery</h3>
+              <h3 className="text-xl font-bold text-gray-800">Academic Mastery (CBC Scale)</h3>
               <div className="space-y-6">
-                <SubjectProgress label="Science" val={88} color="bg-green-500" />
-                <SubjectProgress label="Mathematics" val={72} color="bg-blue-500" />
-                <SubjectProgress label="English" val={95} color="bg-purple-500" />
-                <SubjectProgress label="Life Skills" val={64} color="bg-yellow-500" />
-              </div>
-              <div className="pt-8 border-t border-gray-100 grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-2xl">
-                  <div className="text-xs font-bold text-gray-400 uppercase mb-1">Total Lessons</div>
-                  <div className="text-2xl font-bold text-gray-800">42</div>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-2xl">
-                  <div className="text-xs font-bold text-gray-400 uppercase mb-1">Avg. Quiz Score</div>
-                  <div className="text-2xl font-bold text-gray-800">84%</div>
-                </div>
+                <SubjectProgress label="Science" val={88} color="bg-green-500" desc="Exceeding Expectation" />
+                <SubjectProgress label="Mathematics" val={72} color="bg-blue-500" desc="Meeting Expectation" />
+                <SubjectProgress label="English" val={95} color="bg-purple-500" desc="Exceeding Expectation" />
+                <SubjectProgress label="Life Skills" val={64} color="bg-yellow-500" desc="Approaching Expectation" />
               </div>
             </div>
           )}
 
-          {activeTab === 'chores' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-800">Family Chore System</h3>
-                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-clay hover:scale-105 transition-all">
-                  <Plus size={18} /> Add New Task
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {chores.map(c => (
-                  <div key={c.id} className="bg-white/40 rounded-[32px] p-6 shadow-clay flex flex-col justify-between border border-white/50">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-12 h-12 bg-white rounded-2xl shadow-clay-sm flex items-center justify-center text-primary/40">
-                        {c.status === 'verified' ? <CheckCircle className="text-green-500" /> : <Calendar />}
-                      </div>
-                      <div className="flex items-center gap-1 font-bold text-yellow-600">
-                        <Coins size={16} /> {c.reward}
-                      </div>
-                    </div>
-                    <h4 className="font-bold text-gray-800 mb-2">{c.title}</h4>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-lg ${
-                        c.status === 'verified' ? 'bg-green-100 text-green-700' :
-                        c.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
-                      }`}>{c.status}</span>
-                      {c.status === 'pending' && (
-                        <button className="text-xs font-bold text-primary hover:underline">Verify Now</button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeTab === 'chores' && <ChoreManager />}
+
+          {activeTab === 'sensory' && <SensorySettings />}
         </div>
 
         {/* Sidebar Info */}
@@ -196,28 +151,23 @@ export const ParentDashboard: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0"><BookOpen size={18} /></div>
                 <div>
                   <div className="text-sm font-bold text-gray-800">New Science Strand</div>
-                  <p className="text-xs text-gray-500 leading-relaxed mt-1">Grade 6 Science has introduced "Body Systems". Encourage {studentName} to try the VR Lab today.</p>
+                  <p className="text-xs text-gray-500 leading-relaxed mt-1">Grade 6 Science has introduced "Body Systems".</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0"><Award size={18} /></div>
                 <div>
                   <div className="text-sm font-bold text-gray-800">Mastery Milestone</div>
-                  <p className="text-xs text-gray-500 leading-relaxed mt-1">{studentName} is top 5% in English Vocabulary this month!</p>
+                  <p className="text-xs text-gray-500 leading-relaxed mt-1">{studentName} is top 5% in English Vocabulary!</p>
                 </div>
               </div>
             </div>
-            <button className="w-full mt-8 py-3 bg-[#e0e5ec] text-gray-600 rounded-2xl font-bold text-xs shadow-clay hover:bg-white/50 transition-all">View All Advice</button>
           </div>
 
           <div className="bg-[#e0e5ec] rounded-[32px] p-6 shadow-clay-inset text-center border border-white/40">
             <h4 className="font-bold text-gray-800 mb-2">Device Control</h4>
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-green-600 mb-4">
               <Shield size={14} /> Safe Search Active
-            </div>
-            <div className="p-4 bg-white/40 rounded-2xl shadow-clay-sm flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-gray-600">Daily Limit</span>
-              <span className="text-sm font-bold text-gray-800">2h 30m</span>
             </div>
             <button className="w-full py-2 text-xs font-bold text-primary hover:underline">Manage Restrictions</button>
           </div>
@@ -235,11 +185,11 @@ const StatusPill = ({ icon, label, value }: any) => (
   </div>
 );
 
-const SubjectProgress = ({ label, val, color }: any) => (
+const SubjectProgress = ({ label, val, color, desc }: any) => (
   <div className="space-y-2">
     <div className="flex justify-between text-sm">
       <span className="font-bold text-gray-700">{label}</span>
-      <span className="font-bold text-gray-400">{val}%</span>
+      <span className="font-bold text-gray-400">{desc}</span>
     </div>
     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
       <div className={`h-full ${color} rounded-full transition-all duration-1000`} style={{ width: `${val}%` }}></div>

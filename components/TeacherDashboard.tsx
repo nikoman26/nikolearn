@@ -6,10 +6,13 @@ import {
   MoreHorizontal, Download, Filter
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { LessonArchitect } from './teacher/LessonArchitect';
+import { AttentionHeatmap } from './teacher/AttentionHeatmap';
 
 export const TeacherDashboard: React.FC = () => {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'class' | 'content' | 'analytics'>('overview');
+  const [showArchitect, setShowArchitect] = useState(false);
 
   const students = [
     { id: '1', name: 'Kamau Otieno', focus: 92, progress: 85, status: 'active', lastActive: '10m ago', alerts: 0 },
@@ -25,6 +28,17 @@ export const TeacherDashboard: React.FC = () => {
     { id: 'l3', title: 'Introduction to Algebra', grade: 6, status: 'Published', views: 32, completion: 65 },
   ];
 
+  if (showArchitect) {
+    return (
+      <div className="space-y-6">
+        <button onClick={() => setShowArchitect(false)} className="text-primary font-bold hover:underline mb-4 flex items-center gap-2">
+          ← Back to Hub
+        </button>
+        <LessonArchitect />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -36,7 +50,10 @@ export const TeacherDashboard: React.FC = () => {
           <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-clay text-sm font-bold text-gray-600 hover:bg-white/50 transition-all">
             <Download size={18} /> Reports
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-clay text-sm font-bold hover:scale-105 transition-all">
+          <button 
+            onClick={() => setShowArchitect(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl shadow-clay text-sm font-bold hover:scale-105 transition-all"
+          >
             <Plus size={18} /> New Lesson
           </button>
         </div>
@@ -70,45 +87,50 @@ export const TeacherDashboard: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Live Class Status */}
-            <div className="lg:col-span-2 bg-white/40 rounded-[32px] p-6 shadow-clay border border-white/50">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Live Attention Monitor</h3>
-                <div className="flex items-center gap-2 text-xs font-bold text-green-600">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  Real-time Data
-                </div>
-              </div>
-              <div className="space-y-4">
-                {students.slice(0, 4).map(s => (
-                  <div key={s.id} className="flex items-center justify-between p-4 bg-white/60 rounded-2xl shadow-clay-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {s.name[0]}
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-800">{s.name}</div>
-                        <div className="text-xs text-gray-500">{s.lastActive} • {s.status}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <div className={`text-sm font-bold ${s.focus < 50 ? 'text-red-500' : 'text-green-600'}`}>
-                          {s.focus}% Focus
-                        </div>
-                        <div className="w-20 h-1.5 bg-gray-200 rounded-full mt-1 overflow-hidden">
-                          <div className={`h-full ${s.focus < 50 ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${s.focus}%` }}></div>
-                        </div>
-                      </div>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <MessageSquare size={18} className="text-gray-400" />
-                      </button>
-                    </div>
+            <div className="lg:col-span-2 space-y-8">
+               <div className="bg-white/40 rounded-[32px] p-6 shadow-clay border border-white/50">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-800">Live Attention Monitor</h3>
+                  <div className="flex items-center gap-2 text-xs font-bold text-green-600">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Real-time Data
                   </div>
-                ))}
+                </div>
+                <div className="space-y-4">
+                  {students.slice(0, 4).map(s => (
+                    <div key={s.id} className="flex items-center justify-between p-4 bg-white/60 rounded-2xl shadow-clay-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                          {s.name[0]}
+                        </div>
+                        <div>
+                          <div className="font-bold text-gray-800">{s.name}</div>
+                          <div className="text-xs text-gray-500">{s.lastActive} • {s.status}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <div className={`text-sm font-bold ${s.focus < 50 ? 'text-red-500' : 'text-green-600'}`}>
+                            {s.focus}% Focus
+                          </div>
+                          <div className="w-20 h-1.5 bg-gray-200 rounded-full mt-1 overflow-hidden">
+                            <div className={`h-full ${s.focus < 50 ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${s.focus}%` }}></div>
+                          </div>
+                        </div>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                          <MessageSquare size={18} className="text-gray-400" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full mt-6 py-3 text-sm font-bold text-primary hover:underline" onClick={() => setActiveTab('class')}>
+                  View Full Roster
+                </button>
               </div>
-              <button className="w-full mt-6 py-3 text-sm font-bold text-primary hover:underline" onClick={() => setActiveTab('class')}>
-                View Full Roster
-              </button>
+
+              {/* Aggregated Heatmap View */}
+              <AttentionHeatmap />
             </div>
 
             {/* Quick Stats sidebar */}
@@ -228,7 +250,10 @@ export const TeacherDashboard: React.FC = () => {
                 </div>
               </div>
             ))}
-            <button className="bg-[#e0e5ec] rounded-[32px] border-4 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 text-gray-400 hover:text-primary hover:border-primary transition-all group">
+            <button 
+              onClick={() => setShowArchitect(true)}
+              className="bg-[#e0e5ec] rounded-[32px] border-4 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 text-gray-400 hover:text-primary hover:border-primary transition-all group"
+            >
               <Plus size={40} className="mb-2 group-hover:scale-110 transition-transform" />
               <span className="font-bold">New CBC Lesson</span>
             </button>
@@ -236,17 +261,20 @@ export const TeacherDashboard: React.FC = () => {
         )}
 
         {activeTab === 'analytics' && (
-          <div className="bg-white/40 rounded-[40px] p-12 shadow-clay text-center flex flex-col items-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center text-primary mb-6 shadow-clay-sm">
-              <BarChart3 size={40} />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Class Performance Deep Dive</h3>
-            <p className="text-gray-500 max-w-lg mb-8">
-              Select a subject or time range to see advanced analytics including attention heatmaps, concept mastery, and comparative benchmarks.
-            </p>
-            <div className="flex gap-4">
-              <button className="px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-clay hover:opacity-90">Generate Weekly Report</button>
-              <button className="px-8 py-3 bg-white text-gray-600 rounded-2xl font-bold shadow-clay border border-gray-100">Export CSV</button>
+          <div className="space-y-8">
+            <AttentionHeatmap />
+            <div className="bg-white/40 rounded-[40px] p-12 shadow-clay text-center flex flex-col items-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center text-primary mb-6 shadow-clay-sm">
+                <BarChart3 size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Class Performance Deep Dive</h3>
+              <p className="text-gray-500 max-w-lg mb-8">
+                Generate reports based on specific CBC Strands to see how well the class is meeting expectations.
+              </p>
+              <div className="flex gap-4">
+                <button className="px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-clay hover:opacity-90">Generate Weekly Report</button>
+                <button className="px-8 py-3 bg-white text-gray-600 rounded-2xl font-bold shadow-clay border border-gray-100">Export CSV</button>
+              </div>
             </div>
           </div>
         )}
