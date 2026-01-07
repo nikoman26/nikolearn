@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart, UserCircle, Users, BookOpen } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,14 +11,18 @@ export const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, manualEmail?: string, manualPass?: string) => {
+    if (e) e.preventDefault();
     setLoading(true);
+    
+    const targetEmail = manualEmail || email;
+    const targetPass = manualPass || password;
+
     try {
-      if (isLogin) {
-        await signIn(email, password);
+      if (isLogin || manualEmail) {
+        await signIn(targetEmail, targetPass);
       } else {
-        await signUp(email, password, fullName, role);
+        await signUp(targetEmail, targetPass, fullName, role);
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -27,6 +31,12 @@ export const AuthPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const demoAccounts = [
+    { label: 'Student', email: 'kamau@nikolearn.ke', icon: <UserCircle size={16} />, color: 'bg-blue-50 text-blue-700' },
+    { label: 'Parent', email: 'nyawira@parent.ke', icon: <Users size={16} />, color: 'bg-green-50 text-green-700' },
+    { label: 'Teacher', email: 'omari@school.ke', icon: <BookOpen size={16} />, color: 'bg-purple-50 text-purple-700' },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col md:flex-row bg-white rounded-3xl overflow-hidden shadow-clay">
@@ -64,7 +74,7 @@ export const AuthPage: React.FC = () => {
       </div>
 
       {/* Form Side */}
-      <div className="md:w-1/2 p-8 md:p-12 bg-[#f8fafc]">
+      <div className="md:w-1/2 p-8 md:p-12 bg-[#f8fafc] flex flex-col">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-800">
             {isLogin ? 'Welcome Back!' : 'Create Account'}
@@ -148,7 +158,7 @@ export const AuthPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
@@ -159,6 +169,30 @@ export const AuthPage: React.FC = () => {
             </button>
           </p>
         </div>
+
+        {/* Demo Accounts Section */}
+        {isLogin && (
+          <div className="mt-auto pt-8">
+            <div className="relative flex py-4 items-center">
+              <div className="flex-grow border-t border-gray-100"></div>
+              <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">Quick Demo Access</span>
+              <div className="flex-grow border-t border-gray-100"></div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {demoAccounts.map((account) => (
+                <button
+                  key={account.label}
+                  onClick={() => handleSubmit(undefined, account.email, 'Learny26@#')}
+                  disabled={loading}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-clay-sm ${account.color}`}
+                >
+                  {account.icon}
+                  <span className="text-[10px] font-black uppercase">{account.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
