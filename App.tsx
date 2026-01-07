@@ -1,10 +1,13 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ViewState } from './types';
 import { HeaderNav } from './components/HeaderNav';
 import { BottomNav } from './components/BottomNav';
 import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './components/Dashboard';
+import { Dashboard } from './components/Dashboard'; // Existing hardcoded lessons
+import { StudentDashboard } from './components/StudentDashboard'; // New dynamic subjects
 import { ScienceLab } from './components/ScienceLab';
 import { MwalimuChat } from './components/MwalimuChat';
 import { AuthPage } from './components/AuthPage';
@@ -36,6 +39,7 @@ const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.LandingPage);
   const [isMwalimuOpen, setIsMwalimuOpen] = useState(false);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [isFocusModeActive, setIsFocusModeActive] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(true);
 
@@ -103,7 +107,13 @@ const AppContent: React.FC = () => {
       case ViewState.FAQ: return <FAQPage />;
       case ViewState.InvestorPitch: return <InvestorPitchPage />;
       case ViewState.ParentsOverview: return <ParentsOverviewPage />;
-      case ViewState.Dashboard: return userData ? <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />;
+      case ViewState.Dashboard: 
+        return userData ? (
+          <div className="space-y-12">
+            <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} />
+            <StudentDashboard onSubjectSelect={(id) => { setSelectedSubjectId(id); /* Future: Navigate to SubjectDetail */ }} />
+          </div>
+        ) : <LandingPage setView={setCurrentView} />;
       case ViewState.LessonPlayer: return <LessonPlayer />;
       case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} /> : (userData ? <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
       case ViewState.ScienceLab: return <ScienceLab />;
