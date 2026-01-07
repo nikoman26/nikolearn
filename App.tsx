@@ -6,8 +6,9 @@ import { ViewState } from './types';
 import { HeaderNav } from './components/HeaderNav';
 import { BottomNav } from './components/BottomNav';
 import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './components/Dashboard'; // Existing hardcoded lessons
-import { StudentDashboard } from './components/StudentDashboard'; // New dynamic subjects
+import { Dashboard } from './components/Dashboard';
+import { StudentDashboard } from './components/StudentDashboard';
+import { SubjectDetail } from './components/SubjectDetail';
 import { ScienceLab } from './components/ScienceLab';
 import { MwalimuChat } from './components/MwalimuChat';
 import { AuthPage } from './components/AuthPage';
@@ -75,19 +76,13 @@ const AppContent: React.FC = () => {
 
   const handleStartLesson = (id: string) => {
     setCurrentLessonId(id);
-    if (isStudent()) {
-      setIsFocusModeActive(true);
-    }
-    if (id.startsWith('cbc-lesson-') || id.startsWith('f1000')) {
-      setCurrentView(ViewState.CBCLessonPlayer);
-    } else {
-      setCurrentView(ViewState.LessonPlayer);
-    }
+    if (isStudent()) setIsFocusModeActive(true);
+    setCurrentView(ViewState.CBCLessonPlayer);
   };
 
   const handleLessonComplete = () => {
     setIsFocusModeActive(false);
-    setCurrentView(isTeacher() ? ViewState.TeacherDashboard : ViewState.Dashboard);
+    setCurrentView(ViewState.Dashboard);
     setCurrentLessonId(null);
   };
 
@@ -111,11 +106,25 @@ const AppContent: React.FC = () => {
         return userData ? (
           <div className="space-y-12">
             <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} />
-            <StudentDashboard onSubjectSelect={(id) => { setSelectedSubjectId(id); /* Future: Navigate to SubjectDetail */ }} />
+            <StudentDashboard onSubjectSelect={(id) => { 
+              setSelectedSubjectId(id); 
+              setCurrentView(ViewState.SubjectDetail as any); 
+            }} />
           </div>
         ) : <LandingPage setView={setCurrentView} />;
-      case ViewState.LessonPlayer: return <LessonPlayer />;
-      case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} /> : (userData ? <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
+      // @ts-ignore - Handle the custom detail state
+      case ViewState.SubjectDetail: 
+        return selectedSubjectId ? (
+          <SubjectDetail 
+            subjectId={selectedSubjectId} 
+            onBack={() => setCurrentView(ViewState.Dashboard)} 
+            onStartLesson={handleStartLesson}
+          />
+        ) : null;
+      case ViewState.CBCLessonPlayer: 
+        return currentLessonId ? (
+          <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} />
+        ) : <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} />;
       case ViewState.ScienceLab: return <ScienceLab />;
       case ViewState.Shop: return <Shop />;
       case ViewState.Family: return <ParentDashboard />;
@@ -136,78 +145,40 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#e0e5ec] font-sans flex flex-col md:flex-row">
       <AccessibilityMode />
-      
-      {userData && !isPublicView && (
-        <Sidebar currentView={currentView} setView={setCurrentView} />
-      )}
-
+      {userData && !isPublicView && <Sidebar currentView={currentView} setView={setCurrentView} />}
       <div className="flex-1 flex flex-col relative">
-        {!isPublicView && userData && (
-          <HeaderNav 
-            currentView={currentView} 
-            setView={setCurrentView} 
-            user={userData as any} 
-          />
-        )}
-
+        {!isPublicView && userData && <HeaderNav currentView={currentView} setView={setCurrentView} user={userData as any} />}
         {isPublicView && currentView !== ViewState.LandingPage && (
           <div className="fixed top-4 left-4 z-[60]">
-            <button 
-              onClick={() => setCurrentView(ViewState.LandingPage)}
-              className="p-3 bg-white rounded-xl shadow-clay hover:text-primary transition-colors"
-            >
+            <button onClick={() => setCurrentView(ViewState.LandingPage)} className="p-3 bg-white rounded-xl shadow-clay hover:text-primary transition-colors">
               <ChevronLeft size={24} />
             </button>
           </div>
         )}
-        
-        <main className={`flex-1 overflow-y-auto ${
-          isPublicView && currentView === ViewState.LandingPage 
-            ? 'p-0' 
-            : 'pt-20 sm:pt-24 pb-24 md:pb-8 px-4 sm:px-6 lg:px-8'
-        }`}>
+        <main className={`flex-1 overflow-y-auto ${isPublicView && currentView === ViewState.LandingPage ? 'p-0' : 'pt-20 sm:pt-24 pb-24 md:pb-8 px-4 sm:px-6 lg:px-8'}`}>
           <div className={`${isPublicView && currentView === ViewState.LandingPage ? '' : 'max-w-6xl mx-auto'}`}>
             {renderContent()}
           </div>
         </main>
-
-        {userData && isStudent() && !isPublicView && (
-          <FocusModeIndicator isActive={isFocusModeActive} />
-        )}
-
+        {userData && isStudent() && !isPublicView && <FocusModeIndicator isActive={isFocusModeActive} />}
         {(isStudent() || isTeacher()) && !isMwalimuOpen && !isPublicView && (
-          <button
-            onClick={() => setIsMwalimuOpen(true)}
-            className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-clay-primary hover:scale-110 active:scale-95 transition-all z-40 group"
-          >
-            <Sparkles size={28} className="group-hover:rotate-12 transition-transform" />
+          <button onClick={() => setIsMwalimuOpen(true)} className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-clay-primary hover:scale-110 active:scale-95 transition-all z-40">
+            <Sparkles size={28} />
           </button>
         )}
-        
-        {showAttentionMonitor && (
-          <div className="fixed bottom-24 md:bottom-6 left-6 pointer-events-auto" style={{ zIndex: 45 }}>
-            <AttentionMonitor />
-          </div>
-        )}
+        {showAttentionMonitor && <div className="fixed bottom-24 md:bottom-6 left-6 pointer-events-auto" style={{ zIndex: 45 }}><AttentionMonitor /></div>}
       </div>
-
       <MwalimuChat isOpen={isMwalimuOpen} onClose={() => setIsMwalimuOpen(false)} />
-
-      {!isPublicView && userData && (
-        <BottomNav currentView={currentView} setView={setCurrentView} />
-      )}
-
+      {!isPublicView && userData && <BottomNav currentView={currentView} setView={setCurrentView} />}
       {showPrivacyModal && <PrivacyConsentModal />}
     </div>
   );
 };
 
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
-};
+const App: React.FC = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+);
 
 export default App;
