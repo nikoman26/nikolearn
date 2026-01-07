@@ -81,6 +81,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        // If profile fetch fails, it might indicate RLS issues or missing profile data
+        // We still set loading to false to allow the app to proceed, potentially to a profile creation step
       } else {
         setProfile(data);
       }
@@ -133,7 +135,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
-        return { error: 'Failed to create profile' };
+        // Note: If profile creation fails, the user is still logged in via auth.users, 
+        // but the app might fail to load the profile data later.
+        return { error: 'Account created, but failed to set up profile. Please contact support.' };
       }
 
       // Create wallet for students
@@ -150,6 +154,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (walletError) {
           console.error('Error creating wallet:', walletError);
+          return { error: 'Account created, but failed to set up wallet. Please contact support.' };
         }
       }
     }
