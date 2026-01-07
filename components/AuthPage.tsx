@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart, UserCircle, Users, BookOpen, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,41 +9,24 @@ export const AuthPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'student' | 'parent' | 'teacher'>('student');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { signIn, signUp } = useAuth();
 
-  const handleSubmit = async (e?: React.FormEvent, manualEmail?: string, manualPass?: string) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
-    
-    const targetEmail = manualEmail || email;
-    const targetPass = manualPass || password;
-    let authResult: { error?: string } = {};
-
     try {
-      if (isLogin || manualEmail) {
-        authResult = await signIn(targetEmail, targetPass);
+      if (isLogin) {
+        await signIn(email, password);
       } else {
-        authResult = await signUp(targetEmail, targetPass, fullName, role);
+        await signUp(email, password, fullName, role);
       }
-      
-      if (authResult.error) {
-        setError(authResult.error);
-      }
-    } catch (err) {
-      console.error('Auth error:', err);
-      setError('An unexpected error occurred. Please try again.');
+    } catch (error) {
+      console.error('Auth error:', error);
+      alert('Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
-
-  const demoAccounts = [
-    { label: 'Student', email: 'kamau@nikolearn.ke', icon: <UserCircle size={16} />, color: 'bg-blue-50 text-blue-700' },
-    { label: 'Parent', email: 'nyawira@parent.ke', icon: <Users size={16} />, color: 'bg-green-50 text-green-700' },
-    { label: 'Teacher', email: 'omari@school.ke', icon: <BookOpen size={16} />, color: 'bg-purple-50 text-purple-700' },
-  ];
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col md:flex-row bg-white rounded-3xl overflow-hidden shadow-clay">
@@ -81,7 +64,7 @@ export const AuthPage: React.FC = () => {
       </div>
 
       {/* Form Side */}
-      <div className="md:w-1/2 p-8 md:p-12 bg-[#f8fafc] flex flex-col">
+      <div className="md:w-1/2 p-8 md:p-12 bg-[#f8fafc]">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-800">
             {isLogin ? 'Welcome Back!' : 'Create Account'}
@@ -90,13 +73,6 @@ export const AuthPage: React.FC = () => {
             {isLogin ? 'Log in to continue your quest' : 'Start your learning adventure today'}
           </p>
         </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-4 flex items-center gap-3">
-            <AlertTriangle size={20} />
-            <span className="block sm:inline text-sm">{error}</span>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -172,44 +148,17 @@ export const AuthPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <p className="text-gray-500 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError(null); // Clear error when switching forms
-              }}
+              onClick={() => setIsLogin(!isLogin)}
               className="ml-2 text-primary font-bold hover:underline"
             >
               {isLogin ? 'Sign Up' : 'Log In'}
             </button>
           </p>
         </div>
-
-        {/* Demo Accounts Section */}
-        {isLogin && (
-          <div className="mt-auto pt-8">
-            <div className="relative flex py-4 items-center">
-              <div className="flex-grow border-t border-gray-100"></div>
-              <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">Quick Demo Access</span>
-              <div className="flex-grow border-t border-gray-100"></div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.label}
-                  onClick={() => handleSubmit(undefined, account.email, 'Learny26@#')}
-                  disabled={loading}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-clay-sm ${account.color}`}
-                >
-                  {account.icon}
-                  <span className="text-[10px] font-black uppercase">{account.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
