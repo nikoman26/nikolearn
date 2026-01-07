@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart, UserCircle, Users, BookOpen } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, GraduationCap, ShieldCheck, Heart, UserCircle, Users, BookOpen, AlertTriangle } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,24 +9,31 @@ export const AuthPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<'student' | 'parent' | 'teacher'>('student');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e?: React.FormEvent, manualEmail?: string, manualPass?: string) => {
     if (e) e.preventDefault();
     setLoading(true);
+    setError(null);
     
     const targetEmail = manualEmail || email;
     const targetPass = manualPass || password;
+    let authResult: { error?: string } = {};
 
     try {
       if (isLogin || manualEmail) {
-        await signIn(targetEmail, targetPass);
+        authResult = await signIn(targetEmail, targetPass);
       } else {
-        await signUp(targetEmail, targetPass, fullName, role);
+        authResult = await signUp(targetEmail, targetPass, fullName, role);
       }
-    } catch (error) {
-      console.error('Auth error:', error);
-      alert('Authentication failed. Please check your credentials.');
+      
+      if (authResult.error) {
+        setError(authResult.error);
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -83,6 +90,13 @@ export const AuthPage: React.FC = () => {
             {isLogin ? 'Log in to continue your quest' : 'Start your learning adventure today'}
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-4 flex items-center gap-3">
+            <AlertTriangle size={20} />
+            <span className="block sm:inline text-sm">{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -162,7 +176,10 @@ export const AuthPage: React.FC = () => {
           <p className="text-gray-500 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError(null); // Clear error when switching forms
+              }}
               className="ml-2 text-primary font-bold hover:underline"
             >
               {isLogin ? 'Sign Up' : 'Log In'}
