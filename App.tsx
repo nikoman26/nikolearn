@@ -11,7 +11,7 @@ import { AuthPage } from './components/AuthPage';
 import { LessonPlayer } from './components/LessonPlayer';
 import { CBCLessonPlayer } from './components/CBCLessonPlayer';
 import { Shop } from './components/Shop';
-import { ParentDashboard } from './components/ParentDashboard'; // Renamed from FamilyMode
+import { ParentDashboard } from './components/ParentDashboard';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { VRExperience } from './components/VRExperience';
 import { AROverlay } from './components/AROverlay';
@@ -30,28 +30,21 @@ import { PrivacyConsentModal } from './components/PrivacyConsentModal';
 import { MOCK_LESSONS } from './constants';
 import { Sparkles, ChevronLeft } from 'lucide-react';
 
-// Main App Content Component
 const AppContent: React.FC = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isStudent, isTeacher, isParent } = useAuth();
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.LandingPage);
   const [isMwalimuOpen, setIsMwalimuOpen] = useState(false);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
-  const [isFocusModeActive, setIsFocusModeActive] = useState(true); // Mock state for Focus Mode
-  const [showPrivacyModal, setShowPrivacyModal] = useState(true); // Mock state for Privacy Modal
+  const [isFocusModeActive, setIsFocusModeActive] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(true);
 
-  // Sync currentView with auth state
   useEffect(() => {
     if (!loading) {
       if (user && profile) {
         if (currentView === ViewState.LandingPage || currentView === ViewState.Login) {
-          // Redirect based on role after login
-          if (profile.role === 'teacher') {
-            setCurrentView(ViewState.TeacherDashboard);
-          } else if (profile.role === 'parent') {
-            setCurrentView(ViewState.Family); // Family is now ParentDashboard
-          } else {
-            setCurrentView(ViewState.Dashboard);
-          }
+          if (isTeacher()) setCurrentView(ViewState.TeacherDashboard);
+          else if (isParent()) setCurrentView(ViewState.Family);
+          else setCurrentView(ViewState.Dashboard);
         }
       } else {
         const publicViews = [ViewState.LandingPage, ViewState.Login, ViewState.FAQ, ViewState.InvestorPitch, ViewState.ParentsOverview];
@@ -60,7 +53,7 @@ const AppContent: React.FC = () => {
         }
       }
     }
-  }, [user, profile, loading]);
+  }, [user, profile, loading, isTeacher, isParent, currentView]);
 
   if (loading) {
     return (
@@ -75,6 +68,9 @@ const AppContent: React.FC = () => {
 
   const handleStartLesson = (id: string) => {
     setCurrentLessonId(id);
+    if (isStudent()) {
+      setIsFocusModeActive(true); // Automatically trigger focus mode for students
+    }
     if (id.startsWith('cbc-lesson-')) {
       setCurrentView(ViewState.CBCLessonPlayer);
     } else {
@@ -83,12 +79,9 @@ const AppContent: React.FC = () => {
   };
 
   const handleLessonComplete = () => {
-    setCurrentView(ViewState.Dashboard);
+    setIsFocusModeActive(false);
+    setCurrentView(isTeacher() ? ViewState.TeacherDashboard : ViewState.Dashboard);
     setCurrentLessonId(null);
-  };
-
-  const handleLessonProgress = (progress: number) => {
-    console.log(`Lesson progress: ${progress}%`);
   };
 
   const userData = user && profile ? {
@@ -109,35 +102,33 @@ const AppContent: React.FC = () => {
       case ViewState.ParentsOverview: return <ParentsOverviewPage />;
       case ViewState.Dashboard: return userData ? <Dashboard user={userData as any} lessons={MOCK_LESSONS} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />;
       case ViewState.LessonPlayer: return <LessonPlayer />;
-      case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={handleLessonProgress} /> : (userData ? <Dashboard user={userData as any} lessons={MOCK_LESSONS} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
+      case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} /> : (userData ? <Dashboard user={userData as any} lessons={MOCK_LESSONS} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
       case ViewState.ScienceLab: return <ScienceLab />;
       case ViewState.Shop: return <Shop />;
-      case ViewState.Family: return <ParentDashboard />; // Parent Dashboard
+      case ViewState.Family: return <ParentDashboard />;
       case ViewState.VRExperience: return <VRExperience />;
       case ViewState.AROverlay: return <AROverlay />;
       case ViewState.Analytics: return <AnalyticsDashboard />;
       case ViewState.LifeSkills: return <LifeSkillsModule />;
-      case ViewState.TeacherDashboard: return <TeacherDashboard />; // Teacher Dashboard
+      case ViewState.TeacherDashboard: return <TeacherDashboard />;
       case ViewState.ProfileManagement: return userData ? <ProfileManager user={userData as any} onUpdateProfile={() => {}} /> : null;
       case ViewState.ActivityLog: return userData ? <ActivityLogger userId={userData.id} /> : null;
-      case ViewState.Logout: return <LandingPage setView={setCurrentView} />;
       default: return <LandingPage setView={setCurrentView} />;
     }
   };
 
   const isPublicView = [ViewState.LandingPage, ViewState.Login, ViewState.FAQ, ViewState.InvestorPitch, ViewState.ParentsOverview].includes(currentView);
+  const showAttentionMonitor = isStudent() && !isPublicView && [ViewState.Dashboard, ViewState.LessonPlayer, ViewState.CBCLessonPlayer, ViewState.ScienceLab].includes(currentView);
 
   return (
     <div className="min-h-screen bg-[#e0e5ec] font-sans flex flex-col md:flex-row">
       <AccessibilityMode />
       
-      {/* Sidebar for Desktop - Only visible for authenticated users on non-public views */}
       {userData && !isPublicView && (
         <Sidebar currentView={currentView} setView={setCurrentView} />
       )}
 
       <div className="flex-1 flex flex-col relative">
-        {/* Top Header */}
         {!isPublicView && userData && (
           <HeaderNav 
             currentView={currentView} 
@@ -146,7 +137,6 @@ const AppContent: React.FC = () => {
           />
         )}
 
-        {/* Public View Back Button */}
         {isPublicView && currentView !== ViewState.LandingPage && (
           <div className="fixed top-4 left-4 z-[60]">
             <button 
@@ -158,7 +148,6 @@ const AppContent: React.FC = () => {
           </div>
         )}
         
-        {/* Main Content Area */}
         <main className={`flex-1 overflow-y-auto ${
           isPublicView && currentView === ViewState.LandingPage 
             ? 'p-0' 
@@ -169,15 +158,11 @@ const AppContent: React.FC = () => {
           </div>
         </main>
 
-        {/* Floating Widgets */}
-        
-        {/* Focus Mode Indicator (Top Right) */}
-        {!isPublicView && userData && (
+        {userData && isStudent() && !isPublicView && (
           <FocusModeIndicator isActive={isFocusModeActive} />
         )}
 
-        {/* Mwalimu Chat Button (Bottom Right) */}
-        {(profile?.role === 'student' || profile?.role === 'teacher') && !isMwalimuOpen && !isPublicView && (
+        {(isStudent() || isTeacher()) && !isMwalimuOpen && !isPublicView && (
           <button
             onClick={() => setIsMwalimuOpen(true)}
             className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-clay-primary hover:scale-110 active:scale-95 transition-all z-40 group"
@@ -186,8 +171,7 @@ const AppContent: React.FC = () => {
           </button>
         )}
         
-        {/* Attention Monitor (Bottom Left) - Z-index increased to z-45 */}
-        {user && profile && !isPublicView && (
+        {showAttentionMonitor && (
           <div className="fixed bottom-24 md:bottom-6 left-6 pointer-events-auto" style={{ zIndex: 45 }}>
             <AttentionMonitor />
           </div>
@@ -196,12 +180,10 @@ const AppContent: React.FC = () => {
 
       <MwalimuChat isOpen={isMwalimuOpen} onClose={() => setIsMwalimuOpen(false)} />
 
-      {/* Mobile Bottom Navigation */}
       {!isPublicView && userData && (
         <BottomNav currentView={currentView} setView={setCurrentView} />
       )}
 
-      {/* Privacy Consent Modal (Highest Z-index) */}
       {showPrivacyModal && <PrivacyConsentModal />}
     </div>
   );

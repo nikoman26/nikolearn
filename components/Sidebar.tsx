@@ -3,7 +3,8 @@ import {
   ChevronLeft, ChevronRight, LayoutDashboard, 
   FlaskConical, Box, Glasses, LineChart, 
   HeartHandshake, Users, ShoppingBag, 
-  Settings, HelpCircle, Info, User
+  Settings, HelpCircle, Info, User,
+  BookOpen, Activity, Target
 } from 'lucide-react';
 import { ViewState } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,27 +16,31 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { profile } = useAuth();
-  const role = profile?.role;
-
-  const isStudent = role === 'student';
-  const isParent = role === 'parent';
-  const isTeacher = role === 'teacher';
+  const { profile, isStudent, isParent, isTeacher } = useAuth();
 
   const menuItems = [
-    { id: ViewState.Dashboard, icon: LayoutDashboard, label: 'Dashboard', show: true },
-    { id: ViewState.TeacherDashboard, icon: User, label: 'Teacher Hub', show: isTeacher },
-    { id: ViewState.ScienceLab, icon: FlaskConical, label: 'Science Lab', show: isStudent },
-    { id: ViewState.VRExperience, icon: Glasses, label: 'VR Hub', show: isStudent },
-    { id: ViewState.AROverlay, icon: Box, label: 'AR Lessons', show: isStudent },
-    { id: ViewState.Analytics, icon: LineChart, label: 'Analytics', show: isStudent || isTeacher || isParent },
-    { id: ViewState.LifeSkills, icon: HeartHandshake, label: 'Life Skills', show: isStudent || isParent },
-    { id: ViewState.Family, icon: Users, label: 'Family Mode', show: isStudent || isParent },
-    { id: ViewState.Shop, icon: ShoppingBag, label: 'Reward Shop', show: isStudent },
+    // Common items
+    { id: ViewState.Dashboard, icon: LayoutDashboard, label: 'Dashboard', show: isStudent() },
+    { id: ViewState.TeacherDashboard, icon: User, label: 'Teacher Hub', show: isTeacher() },
+    { id: ViewState.Family, icon: Users, label: 'Family Hub', show: isParent() || isStudent() },
+    
+    // Student exclusive
+    { id: ViewState.ScienceLab, icon: FlaskConical, label: 'Science Lab', show: isStudent() },
+    { id: ViewState.VRExperience, icon: Glasses, label: 'VR Hub', show: isStudent() },
+    { id: ViewState.AROverlay, icon: Box, label: 'AR Lessons', show: isStudent() },
+    { id: ViewState.LifeSkills, icon: HeartHandshake, label: 'Life Skills', show: isStudent() },
+    { id: ViewState.Shop, icon: ShoppingBag, label: 'Reward Shop', show: isStudent() },
+    
+    // Teacher exclusive/modified
+    { id: ViewState.Analytics, icon: LineChart, label: 'Class Analytics', show: isTeacher() },
+    
+    // Shared with different labels/context
+    { id: ViewState.Analytics, icon: Activity, label: 'My Progress', show: isStudent() },
+    { id: ViewState.Analytics, icon: Target, label: 'Family Insights', show: isParent() },
   ].filter(item => item.show);
 
   const secondaryItems = [
-    { id: ViewState.ParentsOverview, icon: Info, label: 'For Parents', show: !isParent },
+    { id: ViewState.ParentsOverview, icon: Info, label: 'For Parents', show: !isParent() },
     { id: ViewState.InvestorPitch, icon: Info, label: 'Vision', show: true },
     { id: ViewState.FAQ, icon: HelpCircle, label: 'Help Center', show: true },
   ];
@@ -62,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
         <div className="space-y-1">
           {menuItems.map((item) => (
             <SidebarItem 
-              key={item.id}
+              key={item.id + item.label}
               icon={<item.icon size={22} />}
               label={item.label}
               active={currentView === item.id}
