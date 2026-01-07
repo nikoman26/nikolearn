@@ -14,10 +14,10 @@ export const useRobustData = () => {
     const fetchData = async () => {
       setLoading(true);
       
-      // Fetch Wallet Data from robust schema
+      // Fetch Wallet Data, aliasing streak_count to streak_days
       const { data: walletData } = await supabase
         .from('wallets')
-        .select('*')
+        .select('*, streak_count as streak_days')
         .eq('student_id', user.id)
         .single();
       
@@ -34,10 +34,10 @@ export const useRobustData = () => {
         const formattedLessons = lessonsData.map(lesson => ({
           id: lesson.id,
           title: lesson.title,
-          subject: lesson.subjects?.name || 'General',
+          subject: lesson.subjects?.name || lesson.subject || 'General',
           duration: `${lesson.duration_minutes} min`,
           progress: 0, // In a real app, join with student_progress
-          image: lesson.content?.type === 'vr_interactive' 
+          image: lesson.interactive_elements?.type === 'vr_interactive' 
             ? 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80&w=400' 
             : 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=400',
           isCBC: true
@@ -59,7 +59,8 @@ export const useRobustData = () => {
         table: 'wallets',
         filter: `student_id=eq.${user.id}`
       }, (payload) => {
-        setWallet(payload.new);
+        // Update wallet with the new payload, ensuring streak_days is present
+        setWallet({ ...payload.new, streak_days: payload.new.streak_count });
       })
       .subscribe();
 

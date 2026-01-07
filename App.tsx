@@ -119,7 +119,10 @@ const AppContent: React.FC = () => {
             onBack={() => setCurrentView(ViewState.Dashboard)} 
             onStartLesson={handleStartLesson}
           />
-        ) : null;
+        ) : <StudentDashboard onSubjectSelect={(id) => { 
+              setSelectedSubjectId(id); 
+              setCurrentView(ViewState.SubjectDetail); 
+            }} />;
       case ViewState.CBCLessonPlayer: 
         return currentLessonId ? (
           <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} />

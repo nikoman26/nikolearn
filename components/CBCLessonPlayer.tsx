@@ -25,7 +25,7 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
   const [currentSection, setCurrentSection] = useState(0);
   const [showInteractive, setShowInteractive] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [timeSpent, setTimeSpent] = useState(0); // Added time tracking
+  const [timeSpent, setTimeSpent] = useState(0); 
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -47,19 +47,21 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
             .single();
 
           const initialProgress = progressData?.progress_percentage || 0;
-          const initialTime = progressData?.time_spent_minutes || 0;
+          const initialTime = (progressData?.time_spent_minutes || 0) * 60;
           
           setProgress(initialProgress);
-          setTimeSpent(initialTime * 60); // Convert minutes to seconds
+          setTimeSpent(initialTime);
 
           await supabase.from('student_progress').upsert({
             student_id: user.id,
             lesson_id: lessonId,
             last_accessed: new Date().toISOString(),
             progress_percentage: initialProgress,
-            time_spent_minutes: initialTime,
+            time_spent_minutes: Math.round(initialTime / 60),
           }, { onConflict: 'student_id, lesson_id' });
         }
+      } else if (error) {
+        console.error("Error fetching lesson:", error);
       }
       setLoading(false);
     };
@@ -228,9 +230,38 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
                     </button>
                   </>
                 )}
-                {content.ar_overlay && (
-                  <div className="absolute bottom-4 right-4 p-3 bg-blue-500/80 rounded-xl backdrop-blur-sm text-white flex items-center gap-2 text-sm font-bold">
-                    <Camera size={16} /> AR Overlay Available
+                {content.type === 'ar_overlay' && (
+                  <>
+                    <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=1200')] bg-cover"></div>
+                    <Camera size={64} className="text-blue-500 animate-pulse mb-4 relative z-10" />
+                    <h3 className="text-2xl font-black relative z-10">{content.title || 'AR Visualization'}</h3>
+                    <p className="text-white/60 mb-8 relative z-10">Augmented Reality Mode</p>
+                    <button 
+                      onClick={() => setShowInteractive(true)}
+                      className="bg-blue-500 text-white px-10 py-4 rounded-2xl font-black shadow-lg hover:scale-110 transition-transform relative z-10 flex items-center gap-2"
+                    >
+                      <Camera size={20} /> Launch AR Overlay
+                    </button>
+                  </>
+                )}
+                {content.type === 'simulation' && (
+                  <>
+                    <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=1200')] bg-cover"></div>
+                    <Brain size={64} className="text-green-500 animate-pulse mb-4 relative z-10" />
+                    <h3 className="text-2xl font-black relative z-10">{content.title || 'Simulation'}</h3>
+                    <p className="text-white/60 mb-8 relative z-10">Interactive Scenario</p>
+                    <button 
+                      onClick={() => setShowInteractive(true)}
+                      className="bg-green-500 text-white px-10 py-4 rounded-2xl font-black shadow-lg hover:scale-110 transition-transform relative z-10 flex items-center gap-2"
+                    >
+                      <Play size={20} /> Start Simulation
+                    </button>
+                  </>
+                )}
+                {!content.type && (
+                  <div className="text-center text-gray-400">
+                    <BookOpen size={48} className="mx-auto mb-4" />
+                    <p>No interactive content defined for this lesson.</p>
                   </div>
                 )}
               </div>
@@ -243,21 +274,25 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
                 <Star size={40} />
               </div>
               <h3 className="text-2xl font-black text-gray-800 mb-2">Final Mastery Check</h3>
-              <p className="text-gray-500 font-bold mb-8">Complete this quiz to earn 50 LearnCoins!</p>
+              <p className="text-gray-500 font-bold mb-8">Complete this section to earn 50 LearnCoins!</p>
               
               <div className="max-w-md mx-auto space-y-4">
-                {(content.quiz_preview || []).map((q: any, i: number) => (
-                  <div key={i} className="bg-[#f8f9fb] p-6 rounded-3xl shadow-clay text-left border border-white/50">
-                    <p className="font-black text-gray-800 mb-4">{q.q}</p>
-                    <div className="grid gap-2">
-                      {q.options.map((opt: string, j: number) => (
-                        <button key={j} className="w-full text-left px-4 py-3 rounded-xl bg-white border border-gray-100 font-bold text-sm text-gray-500 hover:border-primary hover:text-primary transition-all">
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
+                {/* Mock Quiz Preview based on lesson type */}
+                <div className="bg-[#f8f9fb] p-6 rounded-3xl shadow-clay text-left border border-white/50">
+                  <p className="font-black text-gray-800 mb-4">
+                    {lesson.title.includes('Body Systems') ? 'What is the main function of the heart?' :
+                     lesson.title.includes('Blood') ? 'Name one type of blood vessel.' :
+                     'What is one healthy habit for your heart?'}
+                  </p>
+                  <div className="grid gap-2">
+                    <button className="w-full text-left px-4 py-3 rounded-xl bg-white border border-gray-100 font-bold text-sm text-gray-500 hover:border-primary hover:text-primary transition-all">
+                      Option A
+                    </button>
+                    <button className="w-full text-left px-4 py-3 rounded-xl bg-white border border-gray-100 font-bold text-sm text-gray-500 hover:border-primary hover:text-primary transition-all">
+                      Option B
+                    </button>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           )}
@@ -295,12 +330,16 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
       {showInteractive && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           <div className="p-4 flex justify-between items-center bg-white/5 backdrop-blur-md">
-            <h2 className="text-white font-black flex items-center gap-2"><Activity size={18} /> {lesson.title} - Virtual Lab</h2>
+            <h2 className="text-white font-black flex items-center gap-2"><Activity size={18} /> {lesson.title} - {content.title || 'Interactive Lab'}</h2>
             <button onClick={() => setShowInteractive(false)} className="p-2 text-white/50 hover:text-white transition-colors"><X size={24} /></button>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center">
              <div className="w-32 h-32 rounded-full border-4 border-primary border-t-transparent animate-spin mb-6"></div>
-             <p className="text-white/60 font-black animate-pulse">Initializing VR Rendering Engine for {content.title || 'Lab'}...</p>
+             <p className="text-white/60 font-black animate-pulse">
+               {content.type === 'vr_interactive' && 'Initializing VR Rendering Engine...'}
+               {content.type === 'ar_overlay' && 'Preparing AR Camera Feed...'}
+               {content.type === 'simulation' && 'Running Health Scenario Simulation...'}
+             </p>
           </div>
           <div className="p-8 bg-white/5 backdrop-blur-md grid grid-cols-2 md:grid-cols-4 gap-4">
              {(content.interactive_hotspots || []).map((h: any) => (
