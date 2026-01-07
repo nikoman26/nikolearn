@@ -47,6 +47,7 @@ export interface Database {
           id: string;
           title: string;
           subject: string;
+          subject_id: string | null; // Added subject_id
           strand: string;
           sub_strand: string;
           grade_level: number;
@@ -66,6 +67,7 @@ export interface Database {
           id?: string;
           title: string;
           subject: string;
+          subject_id?: string | null; // Added subject_id
           strand: string;
           sub_strand: string;
           grade_level: number;
@@ -85,6 +87,7 @@ export interface Database {
           id?: string;
           title?: string;
           subject?: string;
+          subject_id?: string | null; // Added subject_id
           strand?: string;
           sub_strand?: string;
           grade_level?: number;
@@ -96,9 +99,6 @@ export interface Database {
           created_by?: string;
           created_at?: string;
           updated_at?: string;
-          description?: string | null;
-          learning_objectives?: string[] | null;
-          prerequisites?: string[] | null;
         };
       };
       student_progress: {
@@ -505,6 +505,29 @@ export interface Database {
           is_cached?: boolean;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      subjects: {
+        Row: {
+          id: string;
+          name: string;
+          code: string | null;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          code?: string | null;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          code?: string | null;
+          description?: string | null;
+          created_at?: string;
         };
       };
     };

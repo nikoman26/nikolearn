@@ -20,12 +20,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onSubjectSel
   useEffect(() => {
     const fetchSubjects = async () => {
       setLoading(true);
+      // Fetch subjects that have published lessons associated with them, or just all subjects
       const { data, error } = await supabase
         .from('subjects')
         .select('id, name, description')
         .order('name');
 
       if (data) setSubjects(data);
+      if (error) console.error("Error fetching subjects:", error);
       setLoading(false);
     };
 

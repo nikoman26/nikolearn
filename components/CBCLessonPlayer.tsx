@@ -25,6 +25,7 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
   const [currentSection, setCurrentSection] = useState(0);
   const [showInteractive, setShowInteractive] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [timeSpent, setTimeSpent] = useState(0); // Added time tracking
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -39,11 +40,25 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
         setLesson(data);
         // Track that the student started the lesson
         if (user) {
+          // Fetch existing progress or create new
+          const { data: progressData } = await supabase.from('student_progress')
+            .select('progress_percentage, time_spent_minutes')
+            .match({ student_id: user.id, lesson_id: lessonId })
+            .single();
+
+          const initialProgress = progressData?.progress_percentage || 0;
+          const initialTime = progressData?.time_spent_minutes || 0;
+          
+          setProgress(initialProgress);
+          setTimeSpent(initialTime * 60); // Convert minutes to seconds
+
           await supabase.from('student_progress').upsert({
             student_id: user.id,
             lesson_id: lessonId,
-            last_accessed: new Date().toISOString()
-          });
+            last_accessed: new Date().toISOString(),
+            progress_percentage: initialProgress,
+            time_spent_minutes: initialTime,
+          }, { onConflict: 'student_id, lesson_id' });
         }
       }
       setLoading(false);
@@ -52,15 +67,55 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
     fetchLesson();
   }, [lessonId, user]);
 
+  // Simulate progress tracking based on time spent
+  useEffect(() => {
+    if (!lesson || progress >= 100) return;
+
+    const totalDurationSeconds = lesson.duration_minutes * 60;
+
+    const interval = setInterval(() => {
+      setTimeSpent(prev => {
+        const newTime = prev + 1;
+        // Calculate progress based on time, but cap at 99% until manually completed
+        const newProgress = Math.min((newTime / totalDurationSeconds) * 100, 99);
+        setProgress(newProgress);
+        onProgress(newProgress);
+        
+        // Update database progress every 30 seconds (for persistence)
+        if (newTime % 30 === 0 && user) {
+          supabase.from('student_progress').update({
+            progress_percentage: Math.round(newProgress),
+            time_spent_minutes: Math.round(newTime / 60),
+            last_accessed: new Date().toISOString()
+          }).match({ student_id: user.id, lesson_id: lessonId }).then(({ error }) => {
+            if (error) console.error("Failed to save progress:", error);
+          });
+        }
+        
+        return newTime;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lesson, progress, onProgress, user, lessonId]);
+
+  const formatTime = (seconds: number) => {
+    const totalMinutes = Math.floor(seconds / 60);
+    const mins = totalMinutes % 60;
+    const hours = Math.floor(totalMinutes / 60);
+    
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins} min`;
+  };
+
   if (loading) return (
     <div className="h-[60vh] flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
     </div>
   );
 
-  if (!lesson) return <div className="p-8 text-center bg-red-50 rounded-3xl text-red-500 font-bold">Lesson not found.</div>;
+  if (!lesson) return <div className="p-8 text-center bg-red-100 rounded-3xl text-red-700 font-bold shadow-clay">Lesson not found.</div>;
 
-  const content = lesson.content || {};
+  const content = lesson.interactive_elements || {};
   const sections = [
     { title: 'Overview', icon: <BookOpen size={18} /> },
     { title: 'Interactive Lab', icon: <Activity size={18} />, type: content.type },
@@ -69,31 +124,29 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
 
   const handleComplete = async () => {
     if (user) {
-      // 1. Update Progress
-      await supabase.from('student_progress').update({
-        completion_percentage: 100,
-        completed_at: new Date().toISOString()
-      }).match({ student_id: user.id, lesson_id: lessonId });
+      // 1. Update Progress to 100%
+      await supabase.from('student_progress').upsert({
+        student_id: user.id,
+        lesson_id: lessonId,
+        progress_percentage: 100,
+        completed_at: new Date().toISOString(),
+        time_spent_minutes: Math.round(timeSpent / 60)
+      }, { onConflict: 'student_id, lesson_id' });
 
       // 2. Award LearnCoin (Transaction Ledger)
       const rewardAmount = 50;
-      await supabase.from('transactions').insert({
+      await supabase.from('learncoin_transactions').insert({
         student_id: user.id,
         amount: rewardAmount,
-        type: 'earned',
-        source_type: 'lesson',
+        transaction_type: 'earned',
+        source: 'lesson',
         description: `Completed: ${lesson.title}`
       });
 
-      // 3. Update Wallet Balance
-      const { data: wallet } = await supabase.from('wallets').select('balance').eq('student_id', user.id).single();
-      if (wallet) {
-        await supabase.from('wallets').update({ 
-          balance: wallet.balance + rewardAmount,
-          last_activity: new Date().toISOString()
-        }).eq('student_id', user.id);
-      }
+      // 3. Update Wallet Balance (This relies on the database trigger/function or useRobustData hook)
+      // We rely on the database transaction above and the useRobustData hook for eventual consistency.
     }
+    setProgress(100);
     onComplete();
   };
 
@@ -107,7 +160,7 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-              {lesson.subjects?.name} • Grade {lesson.grade_level}
+              {lesson.subjects?.name || lesson.subject} • Grade {lesson.grade_level}
             </span>
             <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
               <Clock size={12} /> {lesson.duration_minutes} min
@@ -165,7 +218,7 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
                   <>
                     <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80&w=1200')] bg-cover"></div>
                     <Activity size={64} className="text-primary animate-pulse mb-4 relative z-10" />
-                    <h3 className="text-2xl font-black relative z-10">VR Heart Simulator</h3>
+                    <h3 className="text-2xl font-black relative z-10">{content.title || 'Virtual Lab'}</h3>
                     <p className="text-white/60 mb-8 relative z-10">3D Interaction Active</p>
                     <button 
                       onClick={() => setShowInteractive(true)}
@@ -175,13 +228,10 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
                     </button>
                   </>
                 )}
-                {content.type === 'ar_overlay' && (
-                  <>
-                    <Camera size={64} className="text-blue-400 mb-4" />
-                    <h3 className="text-2xl font-black">AR Circulatory View</h3>
-                    <p className="text-white/60 mb-8">Scan your workspace to overlay blood vessels</p>
-                    <button className="bg-blue-500 text-white px-10 py-4 rounded-2xl font-black shadow-lg">Start Camera</button>
-                  </>
+                {content.ar_overlay && (
+                  <div className="absolute bottom-4 right-4 p-3 bg-blue-500/80 rounded-xl backdrop-blur-sm text-white flex items-center gap-2 text-sm font-bold">
+                    <Camera size={16} /> AR Overlay Available
+                  </div>
                 )}
               </div>
             </div>
@@ -196,7 +246,7 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
               <p className="text-gray-500 font-bold mb-8">Complete this quiz to earn 50 LearnCoins!</p>
               
               <div className="max-w-md mx-auto space-y-4">
-                {content.quiz_preview?.map((q: any, i: number) => (
+                {(content.quiz_preview || []).map((q: any, i: number) => (
                   <div key={i} className="bg-[#f8f9fb] p-6 rounded-3xl shadow-clay text-left border border-white/50">
                     <p className="font-black text-gray-800 mb-4">{q.q}</p>
                     <div className="grid gap-2">
@@ -250,10 +300,10 @@ export const CBCLessonPlayer: React.FC<CBCLessonPlayerProps> = ({
           </div>
           <div className="flex-1 flex flex-col items-center justify-center">
              <div className="w-32 h-32 rounded-full border-4 border-primary border-t-transparent animate-spin mb-6"></div>
-             <p className="text-white/60 font-black animate-pulse">Initializing VR Rendering Engine...</p>
+             <p className="text-white/60 font-black animate-pulse">Initializing VR Rendering Engine for {content.title || 'Lab'}...</p>
           </div>
           <div className="p-8 bg-white/5 backdrop-blur-md grid grid-cols-2 md:grid-cols-4 gap-4">
-             {content.interactive_hotspots?.map((h: any) => (
+             {(content.interactive_hotspots || []).map((h: any) => (
                <button key={h.id} className="p-4 rounded-2xl bg-white/10 text-white text-left hover:bg-white/20 transition-all border border-white/10 group">
                  <div className="text-[10px] font-black text-primary uppercase mb-1">Hotspot</div>
                  <div className="font-bold text-sm group-hover:translate-x-1 transition-transform">{h.label}</div>
