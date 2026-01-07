@@ -38,6 +38,7 @@ export enum ViewState {
   Dashboard = 'DASHBOARD',
   LessonPlayer = 'LESSON_PLAYER',
   CBCLessonPlayer = 'CBC_LESSON_PLAYER',
+  SubjectDetail = 'SUBJECT_DETAIL',
   ScienceLab = 'SCIENCE_LAB',
   Shop = 'SHOP',
   Family = 'FAMILY',
@@ -72,8 +73,8 @@ export interface AccessibilityPreferences {
 
 export interface AnalyticsData {
   progress: Array<{ name: string; progress: number; time: number; focus: number }>;
-  subjects: Array<{ subject: string; score: number; students: number; color: string }>;
-  learningStyles: Array<{ name: string; value: number; color: string }>;
+  subjects: Array<{ subject: string; score: number; students: number; color: number }>;
+  learningStyles: Array<{ name: string; value: number; color: number }>;
   progression: Array<{ month: string; avg: number; target: number }>;
 }
 

@@ -108,11 +108,10 @@ const AppContent: React.FC = () => {
             <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} />
             <StudentDashboard onSubjectSelect={(id) => { 
               setSelectedSubjectId(id); 
-              setCurrentView(ViewState.SubjectDetail as any); 
+              setCurrentView(ViewState.SubjectDetail); 
             }} />
           </div>
         ) : <LandingPage setView={setCurrentView} />;
-      // @ts-ignore - Handle the custom detail state
       case ViewState.SubjectDetail: 
         return selectedSubjectId ? (
           <SubjectDetail 
