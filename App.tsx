@@ -27,16 +27,19 @@ import { AccessibilityMode } from './components/AccessibilityMode';
 import { LandingPage } from './components/LandingPage';
 import { FocusModeIndicator } from './components/FocusModeIndicator';
 import { PrivacyConsentModal } from './components/PrivacyConsentModal';
-import { MOCK_LESSONS } from './constants';
+import { useRobustData } from './hooks/useRobustData';
 import { Sparkles, ChevronLeft } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const { user, profile, loading, isStudent, isTeacher, isParent } = useAuth();
+  const { user, profile, loading: authLoading, isStudent, isTeacher, isParent } = useAuth();
+  const { wallet, lessons, loading: dataLoading } = useRobustData();
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.LandingPage);
   const [isMwalimuOpen, setIsMwalimuOpen] = useState(false);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [isFocusModeActive, setIsFocusModeActive] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(true);
+
+  const loading = authLoading || (user && dataLoading);
 
   useEffect(() => {
     if (!loading) {
@@ -69,9 +72,9 @@ const AppContent: React.FC = () => {
   const handleStartLesson = (id: string) => {
     setCurrentLessonId(id);
     if (isStudent()) {
-      setIsFocusModeActive(true); // Automatically trigger focus mode for students
+      setIsFocusModeActive(true);
     }
-    if (id.startsWith('cbc-lesson-')) {
+    if (id.startsWith('cbc-lesson-') || id.startsWith('f1000')) {
       setCurrentView(ViewState.CBCLessonPlayer);
     } else {
       setCurrentView(ViewState.LessonPlayer);
@@ -88,8 +91,8 @@ const AppContent: React.FC = () => {
     id: user.id,
     name: profile.full_name || 'User',
     role: profile.role,
-    coins: 450,
-    streak: 5,
+    coins: wallet?.balance || 0,
+    streak: wallet?.streak_days || 0,
     avatarUrl: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
   } : null;
 
@@ -100,9 +103,9 @@ const AppContent: React.FC = () => {
       case ViewState.FAQ: return <FAQPage />;
       case ViewState.InvestorPitch: return <InvestorPitchPage />;
       case ViewState.ParentsOverview: return <ParentsOverviewPage />;
-      case ViewState.Dashboard: return userData ? <Dashboard user={userData as any} lessons={MOCK_LESSONS} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />;
+      case ViewState.Dashboard: return userData ? <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />;
       case ViewState.LessonPlayer: return <LessonPlayer />;
-      case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} /> : (userData ? <Dashboard user={userData as any} lessons={MOCK_LESSONS} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
+      case ViewState.CBCLessonPlayer: return currentLessonId ? <CBCLessonPlayer lessonId={currentLessonId} onComplete={handleLessonComplete} onProgress={() => {}} /> : (userData ? <Dashboard user={userData as any} lessons={lessons} onStartLesson={handleStartLesson} setView={setCurrentView} /> : <LandingPage setView={setCurrentView} />);
       case ViewState.ScienceLab: return <ScienceLab />;
       case ViewState.Shop: return <Shop />;
       case ViewState.Family: return <ParentDashboard />;
