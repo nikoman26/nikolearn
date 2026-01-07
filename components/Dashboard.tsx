@@ -1,223 +1,196 @@
 import React from 'react';
-import { 
-  BookOpen, TrendingUp, Star, Coins, Clock, 
-  FlaskConical, Glasses, Box, ChevronRight, 
-  Target, MessageSquare, Award, Zap, HeartHandshake 
-} from 'lucide-react';
-import { UserProfile, Lesson, ViewState } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { Play, Clock, Star, Trophy, ArrowRight, Zap, Target, BookOpen } from 'lucide-react';
+import { ViewState } from '../types';
 
 interface DashboardProps {
-  user: UserProfile;
-  lessons: Lesson[];
+  user: {
+    name: string;
+    coins: number;
+    streak: number;
+    avatarUrl: string;
+  };
+  lessons: Array<{
+    id: string;
+    title: string;
+    subject: string;
+    duration: string;
+    progress: number;
+    image: string;
+    isCBC?: boolean;
+  }>;
   onStartLesson: (id: string) => void;
-  setView: (view: ViewState) => void; // Added setView prop
+  setView: (view: ViewState) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, lessons, onStartLesson, setView }) => {
-  const { profile } = useAuth();
-  const isStudent = profile?.role === 'student';
-
-  // Mock data for student-specific stats
-  const studentStats = {
-    level: 7,
-    xpToNextLevel: 150,
-    currentXp: 850,
-    dailyStreak: 5,
-    totalAchievements: 12,
-    masterySubjects: ['Science', 'Math'],
-  };
-
-  // Filter lessons for recommendations (mock logic)
-  const recommendedLessons = lessons.filter(l => l.subject === 'Science' && l.progress < 100).slice(0, 3);
-  const assignedLessons = lessons.filter(l => l.subject === 'Math' && l.progress < 100).slice(0, 2);
-
-  const quickAccessModules = [
-    { icon: FlaskConical, label: 'Science Lab', view: ViewState.ScienceLab, color: 'bg-green-500' },
-    { icon: Glasses, label: 'VR Experience', view: ViewState.VRExperience, color: 'bg-blue-500' },
-    { icon: Box, label: 'AR Overlay', view: ViewState.AROverlay, color: 'bg-purple-500' },
-    { icon: HeartHandshake, label: 'Life Skills', view: ViewState.LifeSkills, color: 'bg-yellow-500' },
-  ];
-
-  const renderLessonCard = (lesson: Lesson, type: 'recommended' | 'assigned') => (
-    <div 
-      key={lesson.id} 
-      className="bg-[#e0e5ec] rounded-3xl p-5 shadow-clay flex flex-col justify-between hover:shadow-clay-inset transition-all cursor-pointer"
-      onClick={() => onStartLesson(lesson.id)}
-    >
-      <div>
-        <div className="flex justify-between items-start mb-3">
-          <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${
-            type === 'assigned' ? 'bg-red-100 text-red-700' : 'bg-primary/10 text-primary'
-          }`}>
-            {type === 'assigned' ? 'Assigned' : 'Recommended'}
-          </span>
-          <div className="flex items-center gap-1 text-yellow-600 font-bold">
-            <Coins size={16} />
-            <span>{lesson.reward}</span>
-          </div>
-        </div>
-        <h3 className="text-lg font-bold text-gray-800 mb-2">{lesson.title}</h3>
-        <p className="text-sm text-gray-600 mb-4">{lesson.description}</p>
-      </div>
-      
-      {/* Progress Bar */}
-      <div className="mt-auto">
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Progress</span>
-          <span className="font-bold">{lesson.progress}%</span>
-        </div>
-        <div className="h-2 bg-[#d1d9e6] rounded-full overflow-hidden shadow-clay-inset-sm">
-          <div 
-            className="h-full bg-primary transition-all duration-500"
-            style={{ width: `${lesson.progress}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (!isStudent) {
-    // Fallback for non-student users who somehow land here
-    return (
-      <div className="p-6 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome, {profile?.role}!</h1>
-        <p className="text-gray-600">Please use the dedicated {profile?.role === 'teacher' ? 'Teacher Hub' : 'Family Mode'} for your role.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 pb-24 md:pb-6">
-      
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome back, {user.name.split(' ')[0]}!</h1>
-        <p className="text-gray-500">Let's continue your learning journey.</p>
-      </div>
-
-      {/* Gamification Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+    <div className="space-y-6 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
+      {/* Welcome Section - Responsive Flex */}
+      <section className="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="text-center sm:text-left">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
+            Habari, <span className="text-primary">{user.name.split(' ')[0]}!</span>
+          </h1>
+          <p className="text-gray-500 font-bold mt-1">Ready for today's learning adventure?</p>
+        </div>
         
-        {/* Level Card */}
-        <div className="bg-[#e0e5ec] rounded-3xl p-5 shadow-clay flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <Star className="text-primary" size={24} />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-800">Level</h3>
-              <p className="text-sm text-gray-500">Next: {studentStats.xpToNextLevel} XP</p>
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-primary">{studentStats.level}</div>
+        {/* Quick Stats - Grid for Mobile */}
+        <div className="grid grid-cols-2 sm:flex items-center gap-3 w-full sm:w-auto">
+          <StatBadge icon={<Zap size={18} className="text-yellow-500" />} value={`${user.streak}d`} label="Streak" />
+          <StatBadge icon={<Trophy size={18} className="text-primary" />} value={user.coins} label="Coins" />
         </div>
+      </section>
 
-        {/* Coins Card */}
-        <div className="bg-[#e0e5ec] rounded-3xl p-5 shadow-clay flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-              <Coins className="text-yellow-600" size={24} />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-800">LearnCoins</h3>
-              <p className="text-sm text-gray-500">Total balance</p>
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-yellow-600">{user.coins}</div>
-        </div>
-
-        {/* Streak Card */}
-        <div className="bg-[#e0e5ec] rounded-3xl p-5 shadow-clay flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-              <Zap className="text-red-600" size={24} />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-800">Streak</h3>
-              <p className="text-sm text-gray-500">Days learning</p>
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-red-600">{studentStats.dailyStreak}</div>
-        </div>
-
-        {/* Achievements Card */}
-        <div className="bg-[#e0e5ec] rounded-3xl p-5 shadow-clay flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Award className="text-blue-600" size={24} />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-800">Achievements</h3>
-              <p className="text-sm text-gray-500">Badges earned</p>
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-blue-600">{studentStats.totalAchievements}</div>
-        </div>
-      </div>
-
-      {/* Quick Access Modules */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Explore Learning Environments</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickAccessModules.map((module) => (
-            <button
-              key={module.label}
-              onClick={() => setView(module.view)} 
-              className={`flex flex-col items-center justify-center p-6 rounded-3xl shadow-clay hover:shadow-clay-inset transition-all ${module.color}/10`}
-            >
-              <module.icon size={32} className={`${module.color.replace('bg', 'text')}`} />
-              <span className="mt-3 text-sm font-bold text-gray-800">{module.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Assigned Lessons (Teacher-driven) */}
-      {assignedLessons.length > 0 && (
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Target size={20} className="text-red-600" />
-              Mandatory Assignments
+      {/* Main Grid - Bento Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        
+        {/* Left Column: Learning Path */}
+        <div className="lg:col-span-2 space-y-6 md:space-y-8">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800 flex items-center gap-2">
+              <BookOpen className="text-primary" size={24} />
+              Continue Learning
             </h2>
-            <button className="text-sm font-semibold text-primary hover:underline">View All <ChevronRight size={16} className="inline" /></button>
+            <button className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
+              View All <ArrowRight size={14} />
+            </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {assignedLessons.map(lesson => renderLessonCard(lesson, 'assigned'))}
-          </div>
-        </div>
-      )}
 
-      {/* Recommended Lessons (AI-driven) */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <BookOpen size={20} className="text-primary" />
-            Personalized Recommendations
-          </h2>
-          <button className="text-sm font-semibold text-primary hover:underline">Explore More <ChevronRight size={16} className="inline" /></button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recommendedLessons.map(lesson => renderLessonCard(lesson, 'recommended'))}
-        </div>
-      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {lessons.map((lesson) => (
+              <LessonCard key={lesson.id} lesson={lesson} onClick={() => onStartLesson(lesson.id)} />
+            ))}
+          </div>
 
-      {/* XP Progress Bar */}
-      <div className="bg-[#e0e5ec] rounded-3xl p-6 shadow-clay">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-bold text-gray-800">XP Progress to Level {studentStats.level + 1}</h3>
-          <span className="text-sm font-bold text-primary">{studentStats.currentXp} / {studentStats.currentXp + studentStats.xpToNextLevel} XP</span>
-        </div>
-        <div className="h-4 bg-[#d1d9e6] rounded-full overflow-hidden shadow-clay-inset-sm">
-          <div 
-            className="h-full bg-primary transition-all duration-500 flex items-center justify-end pr-2"
-            style={{ width: `${(studentStats.currentXp / (studentStats.currentXp + studentStats.xpToNextLevel)) * 100}%` }}
-          >
-            <Star size={12} className="text-white" />
+          {/* Daily Quest - Full Width on Tablet/Mobile */}
+          <div className="bg-primary p-6 md:p-8 rounded-[40px] shadow-clay-primary text-white relative overflow-hidden group">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="max-w-md">
+                <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 inline-block">Daily Quest</span>
+                <h3 className="text-2xl md:text-3xl font-black mb-2 leading-tight">Master the Heart System</h3>
+                <p className="text-white/80 font-bold text-sm">Finish 3 lessons in Science today to earn a Legendary Chest!</p>
+                <div className="mt-6 flex items-center gap-4">
+                  <div className="flex-1 h-3 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-white rounded-full" style={{ width: '66%' }}></div>
+                  </div>
+                  <span className="font-black">2/3</span>
+                </div>
+              </div>
+              <button onClick={() => setView(ViewState.ScienceLab)} className="bg-white text-primary px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform active:scale-95 whitespace-nowrap">
+                Go to Lab
+              </button>
+            </div>
+            {/* Background Decorative Sparkles */}
+            <Star className="absolute -bottom-4 -right-4 text-white/10 w-32 h-32 rotate-12" />
           </div>
         </div>
+
+        {/* Right Column: Progress & Friends */}
+        <div className="space-y-6 md:space-y-8">
+          <div className="bg-white/40 rounded-[40px] p-6 md:p-8 shadow-clay border border-white/50">
+            <h3 className="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
+              <Target className="text-red-500" size={20} />
+              My Progress
+            </h3>
+            <div className="space-y-6">
+              <ProgressItem label="Science" percent={85} color="bg-green-500" />
+              <ProgressItem label="Math" percent={62} color="bg-blue-500" />
+              <ProgressItem label="English" percent={94} color="bg-purple-500" />
+            </div>
+            <button 
+              onClick={() => setView(ViewState.Analytics)}
+              className="w-full mt-8 py-4 bg-[#e0e5ec] text-gray-500 rounded-2xl font-bold text-sm shadow-clay hover:text-primary transition-all"
+            >
+              Full Analytics Report
+            </button>
+          </div>
+
+          <div className="bg-white/40 rounded-[40px] p-6 md:p-8 shadow-clay border border-white/50">
+            <h3 className="text-xl font-black text-gray-800 mb-6">Learning Buddies</h3>
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center justify-between group cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Friend${i}`} alt="Friend" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-800">Friend {i}</div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase">Lv. {10 + i} • Online</div>
+                    </div>
+                  </div>
+                  <div className="text-xs font-black text-primary opacity-0 group-hover:opacity-100 transition-opacity">CHALLENGE</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
+
+const StatBadge = ({ icon, value, label }: any) => (
+  <div className="bg-white/60 px-3 py-2 md:px-4 md:py-2.5 rounded-2xl shadow-clay flex items-center gap-3 min-w-0 border border-white/50">
+    <div className="flex-shrink-0">{icon}</div>
+    <div className="min-w-0">
+      <div className="text-sm md:text-base font-black text-gray-800 truncate">{value}</div>
+      <div className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">{label}</div>
+    </div>
+  </div>
+);
+
+const LessonCard = ({ lesson, onClick }: any) => (
+  <button 
+    onClick={onClick}
+    className="bg-white/40 rounded-[32px] overflow-hidden shadow-clay border border-white/50 hover:scale-[1.02] transition-all group flex flex-col text-left"
+  >
+    <div className="relative h-40 md:h-48 overflow-hidden">
+      <img src={lesson.image} alt={lesson.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+      <div className="absolute top-4 left-4">
+        {lesson.isCBC && (
+          <span className="bg-primary text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-clay-primary uppercase tracking-widest">
+            CBC Core
+          </span>
+        )}
+      </div>
+      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+          <Play fill="currentColor" className="text-primary ml-1" size={20} />
+        </div>
+      </div>
+    </div>
+    <div className="p-5 md:p-6 flex-1 flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] font-black text-primary uppercase tracking-wider">{lesson.subject}</span>
+        <span className="text-gray-300">•</span>
+        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase">
+          <Clock size={12} /> {lesson.duration}
+        </div>
+      </div>
+      <h3 className="text-lg md:text-xl font-black text-gray-800 mb-4 line-clamp-1 leading-tight">{lesson.title}</h3>
+      <div className="mt-auto space-y-2">
+        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+          <span className="text-gray-400">Your Progress</span>
+          <span className="text-primary">{lesson.progress}%</span>
+        </div>
+        <div className="h-2 bg-[#e0e5ec] rounded-full overflow-hidden shadow-clay-inset">
+          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${lesson.progress}%` }}></div>
+        </div>
+      </div>
+    </div>
+  </button>
+);
+
+const ProgressItem = ({ label, percent, color }: any) => (
+  <div className="space-y-2">
+    <div className="flex justify-between text-[11px] font-black uppercase tracking-widest">
+      <span className="text-gray-500">{label}</span>
+      <span className="text-gray-800">{percent}%</span>
+    </div>
+    <div className="h-2.5 bg-[#e0e5ec] rounded-full overflow-hidden shadow-clay-inset">
+      <div className={`h-full ${color} rounded-full`} style={{ width: `${percent}%` }}></div>
+    </div>
+  </div>
+);
