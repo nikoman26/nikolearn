@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database';
 
 const supabaseUrl = 'https://ntbdgaqpecsynmhmtobb.supabase.co';
-const supabaseAnonKey = 'sb_publishable_tbueIop0A49myiEA_vJbTA_Y88Q1viV';
+// Using the correct publishable key from Supabase context
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50YmRnYXFwZWNzeW5taGhtdG9iYiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzY2NDAxNjQwLCJleHAiOjIwODE5Nzc2NDB9.0KDs4lPEYNQb2DzBrfIFnLiayOYq436QYZcZRmPDULg';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
